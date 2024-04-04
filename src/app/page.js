@@ -180,6 +180,20 @@ function useEditTodoModalStatus() {
 function TodoOptionDrawer({ status }) {
   const editTodoModalStatus = useEditTodoModalStatus();
 
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log('Form submitted with content:', formData.content);
+    editTodoModalStatus.close();
+  };
+
   return (
     <>
       <SwipeableDrawer anchor="top" open={status.opened} onClose={status.close} onOpen={() => {}}>
@@ -205,7 +219,20 @@ function TodoOptionDrawer({ status }) {
         open={editTodoModalStatus.opened}
         onClose={editTodoModalStatus.close}
         className="tw-flex tw-justify-center tw-items-center">
-        <div className="tw-bg-white tw-p-10 tw-rounded-[20px]">안녕</div>
+        <div className="tw-bg-white tw-p-10 tw-rounded-[20px]">
+          <form onSubmit={handleSubmit}>
+            <TextField
+              minRows={3}
+              maxRows={10}
+              multiline
+              name="content"
+              autoComplete="off"
+              label="수정할내용"
+              onChange={handleInputChange}
+            />
+            <button type="submit">수정</button>
+          </form>
+        </div>
       </Modal>
     </>
   );
