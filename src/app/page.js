@@ -28,7 +28,7 @@ import RootTheme from './theme';
 import dateToStr from './dateUtil';
 
 function useTodosStatus() {
-  const [todos, setTodos] = React.useState([]);
+  const [todos, setTodos] = React.useState(loadTodosFromLocalStorage());
   const lastTodoIdRef = React.useRef(0);
 
   const addTodo = (newContent) => {
@@ -39,52 +39,25 @@ function useTodosStatus() {
       content: newContent,
       regDate: dateToStr(new Date()),
     };
-    setTodos((todos) => [newTodo, ...todos]);
-
-    return id;
+    setTodos((prevTodos) => [newTodo, ...prevTodos]);
   };
 
   const removeTodo = (id) => {
-    const newTodos = todos.filter((todo) => todo.id != id);
+    const newTodos = todos.filter((todo) => todo.id !== id);
     setTodos(newTodos);
   };
 
-  // modify v1
   const modifyTodo = (id, content) => {
-    const newTodos = todos.map((todo) => (todo.id != id ? todo : { ...todo, content }));
+    const newTodos = todos.map((todo) => (todo.id !== id ? todo : { ...todo, content }));
     setTodos(newTodos);
   };
 
-  // modify v2
-  const modifyTodoByIndex = (index, newContent) => {
-    const newTodos = todos.map((todo, _index) =>
-      _index != index ? todo : { ...todo, content: newContent },
-    );
-    setTodos(newTodos);
-  };
-  // modify v2
-  const modifyTodoById = (id, newContent) => {
-    const index = findTodoIndexById(id);
-
-    if (index == -1) {
-      return null;
-    }
-
-    modifyTodoByIndex(index, newContent);
-  };
-
-  const findTodoIndexById = (id) => {
-    return todos.findIndex((todo) => todo.id == id);
-  };
+  React.useEffect(() => {
+    saveTodosToLocalStorage(todos);
+  }, [todos]);
 
   const findTodoById = (id) => {
-    const index = findTodoIndexById(id);
-
-    if (index == -1) {
-      return null;
-    }
-
-    return todos[index];
+    return todos.find((todo) => todo.id === id);
   };
 
   return {
@@ -93,8 +66,15 @@ function useTodosStatus() {
     removeTodo,
     modifyTodo,
     findTodoById,
-    modifyTodoById,
   };
+}
+function saveTodosToLocalStorage(todos) {
+  localStorage.setItem('todos', JSON.stringify(todos));
+}
+
+function loadTodosFromLocalStorage() {
+  const todosString = localStorage.getItem('todos');
+  return todosString ? JSON.parse(todosString) : [];
 }
 
 const NewTodoForm = ({ todosState, noticeSnackbarState }) => {
